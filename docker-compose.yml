@@ -16,6 +16,7 @@ services:
     environment:
       REDIS_URL: redis://redis:6379/0?decode_responses=True
       API_URL: http://api:80
+
   api:
     build: &build_cfg
       context: .
@@ -24,28 +25,28 @@ services:
     depends_on: &depends
       - db
       - redis
-
     environment: &env_vars
       DB_URL: "postgresql://postgres:classquiz@db:5432/classquiz"
       REDIS: "redis://redis:6379/0?decode_responses=True"
-      MAIL_ADDRESS: "email@email@email.email"
-      MAIL_PASSWORD: "PASSWORT"
-      MAIL_USERNAME: "email@email@email.email"
-      MAIL_SERVER: "email@email@email.emai"
+      MAIL_ADDRESS: ""
+      MAIL_PASSWORD: ""
+      MAIL_USERNAME: ""
+      MAIL_SERVER: ""
       MAX_WORKERS: "1" # Very important
       MAIL_PORT: "587"
       SECRET_KEY: "mysecretkey"
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
       SKIP_EMAIL_VERIFICATION: True
-      HCAPTCHA_KEY: "HCAPTCHA_PRIVATE_KEY"
+      HCAPTCHA_KEY: ""
       MEILISEARCH_URL: "http://meilisearch:7700"
       STORAGE_BACKEND: "local"
       STORAGE_PATH: "/app/data"
+
   redis:
     image: redis:alpine
     restart: always
     healthcheck:
-      test: [ "CMD", "redis-cli","ping" ]
+      test: [ "CMD", "redis-cli", "ping" ]
 
   db:
     image: postgres:14-alpine
@@ -66,7 +67,8 @@ services:
     volumes:
       - ./Caddyfile-docker:/etc/caddy/Caddyfile
     ports:
-      - "8000:8080"
+      - "80:8080"
+
   meilisearch:
     image: getmeili/meilisearch:v0.28.0
     restart: always
@@ -74,13 +76,13 @@ services:
       MEILI_NO_ANALYTICS: true
     volumes:
       - meilisearch-data:/data.ms
+
   worker:
     build: *build_cfg
     environment: *env_vars
     depends_on: *depends
     restart: *restart
     command: arq classquiz.worker.WorkerSettings
-
 
 volumes:
   data:
